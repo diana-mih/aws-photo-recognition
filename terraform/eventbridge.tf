@@ -8,7 +8,7 @@ resource "aws_cloudwatch_event_rule" "s3_object_created" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["diana-photo-pipeline-input-001"]
+      "name": ["photo-pipeline-input-001"]
     }
   }
 })

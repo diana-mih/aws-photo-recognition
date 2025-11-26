@@ -47,7 +47,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
         Action = [
             "s3:GetObject"
         ],
-        Resource = "arn:aws:s3:::diana-photo-pipeline-input-001/*"
+        Resource = "arn:aws:s3:::photo-pipeline-input-001/*"
        },
       {
         Effect = "Allow"

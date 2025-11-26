@@ -48,16 +48,15 @@ Before deploying this project, ensure you have the following installed:
 ```
 aws-photo-recognition/
 ├── lambda/
-│   ├── lambda_function.py
-│   └── lambda.zip
+│   └── lambda_function.py
 ├── terraform/
-│   ├── main.tf            # Main Terraform configuration file
+│   ├── main.tf              # Main Terraform configuration file
 │   ├── s3.tf
 │   ├── eventbridge.tf
 │   ├── sqs.tf
 │   ├── lambda.tf
 │   └── dynamodb.tf
-│── README.md              # Documentation
+│── README.md                # Documentation
 
 ```
 
@@ -67,38 +66,48 @@ aws-photo-recognition/
 
 ### **Step 1: Clone the Repository**
 ```sh
-git clone https://github.com/diana-mih/aws-photo-recognition
-cd terraform
+git clone https://github.com/diana-mih/aws-photo-recognition.git
+cd aws_photo_recognition
 ```
 
-### **Step 2: Initialize Terraform**
-```sh
+## **Step 2: Package the Lambda Function
+
+**On Windows, make sure you run the following command in PowerShell (not Git Bash):**
+
+```powershell
+cd lambda
+Compress-Archive -Path lambda_function.py -DestinationPath lambda.zip -Force
+```
+
+### **Step 3: Initialize Terraform**
+```powershell
+cd ../terraform
 terraform init
 ```
 - Downloads necessary provider plugins.
 - Sets up Terraform backend.
 
-### **Step 3: Plan Deployment**
-```sh
+### **Step 4: Plan Deployment**
+```powershell
 terraform plan
 ```
 - Shows what Terraform will create before applying changes.
 
-### **Step 4: Apply Configuration**
-```sh
+### **Step 5: Apply Configuration**
+```powershell
 terraform apply
 ```
 - Provisions AWS resources automatically.
 
-### **Step 5: Access the Application**
+### **Step 6: Access the Application**
 - Upload an image of a dog or cat to the S3 input bucket.
 - Lambda automatically processes the image with Rekognition.
 - Results are stored in the DynamoDB table, including detected animal type and metadata.
 - Optionally, check CloudWatch logs to monitor processing in real time.
 
-### **Step 6: Destroy Resources (Optional)**
+### **Step 7: Destroy Resources (Optional)**
 If you want to delete all resources:
-```sh
+```powershell
 terraform destroy
 ```
 
