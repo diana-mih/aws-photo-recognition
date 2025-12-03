@@ -1,5 +1,5 @@
 # IAM role for Lambda
-resource "aws_iam_role" "lambda_role" {
+resource "aws_iam_role" "lambda_s3_role" {
   name = "s3-events-lambda-role"
 
   assume_role_policy = jsonencode({
@@ -16,10 +16,24 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
+# Lambda execution role
+resource "aws_iam_role" "lambda_exec_role" {
+  name = "lambda-exec-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+    }]
+  })
+}
+
 # IAM policy for Lambda
 resource "aws_iam_role_policy" "lambda_policy" {
   name = "s3-events-lambda-policy"
-  role = aws_iam_role.lambda_role.id
+  role = aws_iam_role.lambda_s3_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -63,7 +77,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
 # Policy for DynamoDB access
 resource "aws_iam_role_policy" "lambda_dynamodb" {
   name = "lambda-dynamodb-policy"
-  role = aws_iam_role.lambda_role.id
+  role = aws_iam_role.lambda_s3_role.id
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -79,16 +93,43 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
   })
 }
 
+# Attach CloudWatch Logs policy
+resource "aws_iam_role_policy" "lambda_logs_policy" {
+  name = "lambda-logs-policy"
+  role = aws_iam_role.lambda_s3_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
 # Python Lambda function to process S3 events from SQS
 resource "aws_lambda_function" "s3_events_processor" {
   function_name = "s3-events-processor"
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.lambda_s3_role.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.12"
 
   filename    = "../lambda/lambda.zip"
   memory_size = 256
   timeout     = 15
+
+  environment {
+    variables = {
+      LOG_LEVEL = "INFO"
+    }
+  }
 
   depends_on = [
     aws_s3_bucket.photos_input,
