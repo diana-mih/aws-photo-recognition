@@ -4,7 +4,7 @@ resource "aws_sqs_queue" "s3_events" {
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.s3_events_dlq.arn
-    maxReceiveCount     = 5   # message goes in DLQ after 5 failed processing attempts
+    maxReceiveCount     = 5 # message goes in DLQ after 5 failed processing attempts
   })
 
   depends_on = [

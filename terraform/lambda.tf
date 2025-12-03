@@ -45,25 +45,25 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect = "Allow",
         Action = [
-            "s3:GetObject"
+          "s3:GetObject"
         ],
         Resource = "arn:aws:s3:::photo-pipeline-input-001/*"
-       },
+      },
       {
         Effect = "Allow"
         Action = [
-            "rekognition:DetectLabels"
+          "rekognition:DetectLabels"
         ],
         Resource = "*"
-       }
+      }
     ]
   })
 }
 
 # Policy for DynamoDB access
 resource "aws_iam_role_policy" "lambda_dynamodb" {
-  name   = "lambda-dynamodb-policy"
-  role   = aws_iam_role.lambda_role.id
+  name = "lambda-dynamodb-policy"
+  role = aws_iam_role.lambda_role.id
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -86,7 +86,7 @@ resource "aws_lambda_function" "s3_events_processor" {
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.12"
 
-  filename      = "../lambda/lambda.zip"
+  filename    = "../lambda/lambda.zip"
   memory_size = 256
   timeout     = 15
 
