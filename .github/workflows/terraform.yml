@@ -42,4 +42,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-central-1
       - run: terraform init -input=false
+        working-directory: terraform
       - run: terraform apply -auto-approve
+        working-directory: terraform
