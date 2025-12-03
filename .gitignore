@@ -12,5 +12,5 @@ __pycache__/
 *.tfplan
 crash.log
 
-# Lambda packages
-lambda/lambda.zip
+# Lambda package
+*.zip

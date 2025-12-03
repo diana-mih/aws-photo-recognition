@@ -70,7 +70,7 @@ git clone https://github.com/diana-mih/aws-photo-recognition.git
 cd aws_photo_recognition
 ```
 
-## **Step 2: Package the Lambda Function
+### **Step 2: Package the Lambda Function
 
 **On Windows, make sure you run the following command in PowerShell (not Git Bash):**
 
