@@ -1,5 +1,9 @@
 name: Terraform CI/CD
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   push:
     branches: [ main ]
@@ -36,6 +40,6 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-west-1
+          aws-region: eu-central-1
       - run: terraform init -input=false
       - run: terraform apply -auto-approve
