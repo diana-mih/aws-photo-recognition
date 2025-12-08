@@ -23,4 +23,3 @@ module "lambda" {
   sqs_queue_arn      = module.sqs.queue_arn
   dynamodb_table_arn = aws_dynamodb_table.photos_table.arn
 }
-
