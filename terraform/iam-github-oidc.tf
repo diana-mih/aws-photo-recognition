@@ -10,7 +10,7 @@ resource "aws_iam_role" "github_actions_role" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.github.arn
+          Federated = "arn:aws:iam::638325786146:oidc-provider/token.actions.githubusercontent.com"
         }
         Action = "sts:AssumeRoleWithWebIdentity"
 
@@ -23,6 +23,7 @@ resource "aws_iam_role" "github_actions_role" {
       }
     ]
   })
+  depends_on = [aws_iam_openid_connect_provider.github]
 }
 
 # Create the GitHub OIDC provider
