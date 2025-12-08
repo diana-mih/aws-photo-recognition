@@ -55,8 +55,8 @@ resource "aws_iam_role_policy" "lambda_combined_policy" {
           "s3:ListBucket"
         ],
         Resource = [
-          "arn:aws:s3:::photo-pipeline-input-001",
-          "arn:aws:s3:::photo-pipeline-input-001/*"
+          module.input_bucket.bucket_arn,
+          "${module.input_bucket.bucket_arn}/*"
         ]
       },
 
@@ -102,7 +102,7 @@ resource "aws_lambda_function" "s3_events_processor" {
   }
 
   depends_on = [
-    aws_s3_bucket.photos_input,
+    module.input_bucket,
     aws_sqs_queue.s3_events
   ]
 }

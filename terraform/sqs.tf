@@ -8,7 +8,7 @@ resource "aws_sqs_queue" "s3_events" {
   })
 
   depends_on = [
-    aws_s3_bucket.photos_input,
+    module.input_bucket,
     aws_sqs_queue.s3_events_dlq
   ]
 }
