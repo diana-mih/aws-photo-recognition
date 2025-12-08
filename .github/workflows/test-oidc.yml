@@ -6,7 +6,7 @@ permissions:
 
 on:
   workflow_dispatch:
-  push:
+  # push:
 
 jobs:
   test:
@@ -18,7 +18,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-central-1
+          aws-region: eu-west-1
         
       - name: Test AWS STS Caller Identity
         run: aws sts get-caller-identity
