@@ -3,11 +3,11 @@ resource "aws_iam_role" "lambda_role" {
   name = "s3-events-lambda-role"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
         Principal = {
           Service = "lambda.amazonaws.com"
         }
@@ -16,76 +16,67 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# Lambda execution role
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda-exec-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = { Service = "lambda.amazonaws.com" }
-    }]
-  })
-}
-
-# IAM policy for Lambda
-resource "aws_iam_role_policy" "lambda_policy" {
-  name = "s3-events-lambda-policy"
+# Combined IAM policy for Lambda (SQS + S3 + Logs + Dynamodb + Rekognition)
+resource "aws_iam_role_policy" "lambda_combined_policy" {
+  name = "s3-events-lambda-combined-policy"
   role = aws_iam_role.lambda_role.id
 
   policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
+      # --- SQS ---
       {
-        Effect = "Allow"
+        Effect = "Allow",
         Action = [
           "sqs:ReceiveMessage",
           "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ]
+          "sqs:GetQueueAttributes",
+          "sqs:ChangeMessageVisibility"
+        ],
         Resource = aws_sqs_queue.s3_events.arn
       },
+
+      # --- CloudWatch Logs ---
       {
-        Effect = "Allow"
+        Effect = "Allow",
         Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
-        ]
-        Resource = "*"
+        ],
+        Resource = "arn:aws:logs:*:*:*"
       },
+
+      # --- S3 access ---
       {
         Effect = "Allow",
         Action = [
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:ListBucket"
         ],
-        Resource = "arn:aws:s3:::photo-pipeline-input-001/*"
+        Resource = [
+          "arn:aws:s3:::photo-pipeline-input-001",
+          "arn:aws:s3:::photo-pipeline-input-001/*"
+        ]
       },
+
+      # --- Rekognition ---
       {
-        Effect = "Allow"
+        Effect = "Allow",
         Action = [
-          "rekognition:DetectLabels"
+          "rekognition:DetectLabels",
+          "rekognition:DetectModerationLabels"
         ],
         Resource = "*"
-      }
-    ]
-  })
-}
+      },
 
-# Policy for DynamoDB access
-resource "aws_iam_role_policy" "lambda_dynamodb" {
-  name = "lambda-dynamodb-policy"
-  role = aws_iam_role.lambda_role.id
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
+      # --- DynamoDB ---
       {
         Effect = "Allow",
         Action = [
           "dynamodb:PutItem",
-          "dynamodb:UpdateItem"
+          "dynamodb:UpdateItem",
+          "dynamodb:GetItem"
         ],
         Resource = aws_dynamodb_table.photos_table.arn
       }
@@ -93,28 +84,7 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
   })
 }
 
-# Attach CloudWatch Logs policy
-resource "aws_iam_role_policy" "lambda_logs_policy" {
-  name = "lambda-logs-policy"
-  role = aws_iam_role.lambda_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:*:*:*"
-      }
-    ]
-  })
-}
-
-# Python Lambda function to process S3 events from SQS
+# Lambda function
 resource "aws_lambda_function" "s3_events_processor" {
   function_name = "s3-events-processor"
   role          = aws_iam_role.lambda_role.arn
@@ -137,7 +107,7 @@ resource "aws_lambda_function" "s3_events_processor" {
   ]
 }
 
-# Map SQS as event source for Lambda
+# SQS → Lambda
 resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
   event_source_arn = aws_sqs_queue.s3_events.arn
   function_name    = aws_lambda_function.s3_events_processor.arn
