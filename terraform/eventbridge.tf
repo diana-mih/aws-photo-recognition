@@ -18,12 +18,12 @@ resource "aws_cloudwatch_event_rule" "s3_object_created" {
 resource "aws_cloudwatch_event_target" "to_sqs" {
   rule      = aws_cloudwatch_event_rule.s3_object_created.name
   target_id = "send-to-sqs"
-  arn       = aws_sqs_queue.s3_events.arn
+  arn       = module.sqs.queue_arn
 }
 
 # Allow EventBridge to send messages to SQS
 resource "aws_sqs_queue_policy" "allow_eventbridge" {
-  queue_url = aws_sqs_queue.s3_events.url
+  queue_url = module.sqs.queue_url
 
   policy = jsonencode({
     "Version" : "2012-10-17",
@@ -36,7 +36,7 @@ resource "aws_sqs_queue_policy" "allow_eventbridge" {
           "Service" : "events.amazonaws.com"
         },
         "Action" : "sqs:SendMessage",
-        "Resource" : "${aws_sqs_queue.s3_events.arn}"
+        "Resource" : module.sqs.queue_arn
       }
     ]
   })

@@ -1,6 +1,6 @@
 # IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "s3-events-lambda-role"
+  name = var.lambda_role_name
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -16,9 +16,9 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# Combined IAM policy for Lambda (SQS + S3 + Logs + Dynamodb + Rekognition)
+# Combined IAM policy for Lambda (SQS + S3 + Logs + DynamoDB + Rekognition)
 resource "aws_iam_role_policy" "lambda_combined_policy" {
-  name = "s3-events-lambda-combined-policy"
+  name = "${var.lambda_role_name}-combined-policy"
   role = aws_iam_role.lambda_role.id
 
   policy = jsonencode({
@@ -33,7 +33,7 @@ resource "aws_iam_role_policy" "lambda_combined_policy" {
           "sqs:GetQueueAttributes",
           "sqs:ChangeMessageVisibility"
         ],
-        Resource = aws_sqs_queue.s3_events.arn
+        Resource = var.sqs_queue_arn
       },
 
       # --- CloudWatch Logs ---
@@ -55,8 +55,8 @@ resource "aws_iam_role_policy" "lambda_combined_policy" {
           "s3:ListBucket"
         ],
         Resource = [
-          module.input_bucket.bucket_arn,
-          "${module.input_bucket.bucket_arn}/*"
+          var.input_bucket_arn,
+          "${var.input_bucket_arn}/*"
         ]
       },
 
@@ -78,7 +78,7 @@ resource "aws_iam_role_policy" "lambda_combined_policy" {
           "dynamodb:UpdateItem",
           "dynamodb:GetItem"
         ],
-        Resource = aws_dynamodb_table.photos_table.arn
+        Resource = var.dynamodb_table_arn
       }
     ]
   })
@@ -101,21 +101,20 @@ resource "aws_lambda_function" "s3_events_processor" {
     }
   }
 
+  # Se depinde de input-uri, dar nu de resurse directe
   depends_on = [
-    module.input_bucket,
-    aws_sqs_queue.s3_events
+    aws_iam_role_policy.lambda_combined_policy
   ]
 }
 
 # SQS → Lambda
 resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
-  event_source_arn = aws_sqs_queue.s3_events.arn
+  event_source_arn = var.sqs_queue_arn
   function_name    = aws_lambda_function.s3_events_processor.arn
   batch_size       = 1
   enabled          = true
 
   depends_on = [
-    aws_lambda_function.s3_events_processor,
-    aws_sqs_queue.s3_events
+    aws_lambda_function.s3_events_processor
   ]
 }
