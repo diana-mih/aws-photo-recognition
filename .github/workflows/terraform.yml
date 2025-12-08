@@ -22,9 +22,9 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-central-1
+          aws-region: eu-west-1
       - run: terraform fmt -check -recursive
-      - run: terraform init -input=false
+      - run: terraform init -input=false -backend-config="bucket=photorec-tfstate" -backend-config="key=state/terraform.tfstate" -backend-config="region=eu-west-1"
       - run: terraform validate
 
   plan:
@@ -40,7 +40,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-central-1
+          aws-region: eu-west-1
       - run: terraform init -input=false
       - run: terraform plan -no-color
 
@@ -57,6 +57,6 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-central-1
+          aws-region: eu-west-1
       - run: terraform init -input=false
       - run: terraform apply -auto-approve
