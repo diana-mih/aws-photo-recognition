@@ -23,11 +23,6 @@ module "lambda" {
   dynamodb_table_arn = module.dynamodb.dynamodb_table_arn
 }
 
-module "config" {
-  source = "./modules/config"
-
-}
-
 module "dynamodb" {
   source     = "./modules/dynamodb"
   table_name = "photos_metadata"
