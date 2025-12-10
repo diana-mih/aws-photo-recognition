@@ -10,8 +10,9 @@ resource "aws_iam_role" "github_actions_role" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::638325786146:oidc-provider/token.actions.githubusercontent.com"
+          Federated = aws_iam_openid_connect_provider.github.arn
         }
+
         Action = "sts:AssumeRoleWithWebIdentity"
 
         # The "sub" condition restricts which GitHub repo can assume the role
