@@ -8,6 +8,14 @@ module "input_bucket" {
   bucket_name = "photo-pipeline-input-001"
 }
 
+module "eventbridge" {
+  source        = "./modules/eventbridge"
+  bucket_name   = module.input_bucket.bucket_name
+  sqs_queue_arn = module.sqs.queue_arn
+  sqs_queue_url = module.sqs.queue_url
+}
+
+
 module "sqs" {
   source        = "./modules/sqs"
   queue_name    = "s3-events-queue"
