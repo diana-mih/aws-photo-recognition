@@ -8,13 +8,10 @@ module "input_bucket" {
   bucket_name = "photo-pipeline-input-001"
 }
 
-module "eventbridge" {
-  source        = "./modules/eventbridge"
-  bucket_name   = module.input_bucket.bucket_name
-  sqs_queue_arn = module.sqs.queue_arn
-  sqs_queue_url = module.sqs.queue_url
+module "dynamodb" {
+  source     = "./modules/dynamodb"
+  table_name = "photos_metadata"
 }
-
 
 module "sqs" {
   source        = "./modules/sqs"
@@ -23,15 +20,18 @@ module "sqs" {
   s3_bucket_arn = module.input_bucket.bucket_arn
 }
 
+module "eventbridge" {
+  source        = "./modules/eventbridge"
+  bucket_name   = module.input_bucket.bucket_name
+  sqs_queue_arn = module.sqs.queue_arn
+  sqs_queue_url = module.sqs.queue_url
+}
+
+
 module "lambda" {
   source = "./modules/lambda"
 
   input_bucket_arn   = module.input_bucket.bucket_arn
   sqs_queue_arn      = module.sqs.queue_arn
   dynamodb_table_arn = module.dynamodb.dynamodb_table_arn
-}
-
-module "dynamodb" {
-  source     = "./modules/dynamodb"
-  table_name = "photos_metadata"
 }
