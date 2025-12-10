@@ -15,11 +15,20 @@ module "sqs" {
   s3_bucket_arn = module.input_bucket.bucket_arn
 }
 
-
 module "lambda" {
   source = "./modules/lambda"
 
   input_bucket_arn   = module.input_bucket.bucket_arn
   sqs_queue_arn      = module.sqs.queue_arn
-  dynamodb_table_arn = aws_dynamodb_table.photos_table.arn
+  dynamodb_table_arn = module.dynamodb.dynamodb_table_arn
+}
+
+module "config" {
+  source = "./modules/config"
+
+}
+
+module "dynamodb" {
+  source     = "./modules/dynamodb"
+  table_name = "photos_metadata"
 }
