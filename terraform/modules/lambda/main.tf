@@ -79,6 +79,15 @@ resource "aws_iam_role_policy" "lambda_combined_policy" {
           "dynamodb:GetItem"
         ],
         Resource = var.dynamodb_table_arn
+      },
+
+      # -- Cloudwatch Metrics ---
+      {
+        Effect = "Allow",
+        Action = [
+          "cloudwatch:PutMetricData"
+        ],
+        Resource = "*"
       }
     ]
   })
@@ -91,9 +100,10 @@ resource "aws_lambda_function" "s3_events_processor" {
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.12"
 
-  filename    = "../lambda/lambda.zip"
-  memory_size = 256
-  timeout     = 15
+  filename         = "../lambda/lambda.zip"
+  source_code_hash = filebase64sha256("../lambda/lambda.zip")
+  memory_size      = 256
+  timeout          = 15
 
   environment {
     variables = {
@@ -101,7 +111,6 @@ resource "aws_lambda_function" "s3_events_processor" {
     }
   }
 
-  # Se depinde de input-uri, dar nu de resurse directe
   depends_on = [
     aws_iam_role_policy.lambda_combined_policy
   ]
