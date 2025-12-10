@@ -40,4 +40,8 @@ resource "aws_sqs_queue_policy" "allow_eventbridge" {
       }
     ]
   })
+  depends_on = [
+    aws_cloudwatch_event_rule.s3_object_created,
+    aws_cloudwatch_event_target.to_sqs
+  ]
 }
