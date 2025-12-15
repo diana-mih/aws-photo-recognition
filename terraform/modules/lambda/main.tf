@@ -100,10 +100,11 @@ resource "aws_lambda_function" "s3_events_processor" {
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.12"
 
-  filename         = "../lambda/lambda.zip"
-  source_code_hash = filebase64sha256("../lambda/lambda.zip")
-  memory_size      = 256
-  timeout          = 15
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  memory_size = 256
+  timeout     = 15
 
   environment {
     variables = {
@@ -127,3 +128,10 @@ resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
     aws_lambda_function.s3_events_processor
   ]
 }
+
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_file = "${path.module}/../../../lambda/lambda_function.py"
+  output_path = "${path.module}/lambda.zip"
+}
+
